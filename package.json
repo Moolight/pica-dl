@@ -1,0 +1,123 @@
+{
+  "name": "pica-cli",
+  "author": "justorez",
+  "version": "1.5.3",
+  "description": "😉 哔咔漫画下载器",
+  "packageManager": "pnpm@9.0.0",
+  "type": "module",
+  "bin": {
+    "pica-cli": "dist/index.js",
+    "pica-zip": "dist/zip.js"
+  },
+  "scripts": {
+    "postinstall": "simple-git-hooks",
+    "dev": "tsx src/index.ts",
+    "dev:zip": "tsx src/zip.ts",
+    "start": "node dist/index.js",
+    "start:zip": "node dist/zip.js",
+    "build": "rimraf dist && rollup --config rollup.config.js",
+    "test": "vitest",
+    "pub": "pnpm build && npm publish",
+    "type:check": "tsc --incremental --noEmit",
+    "lint": "eslint --cache --ignore-path .gitignore .",
+    "lint:fix": "eslint --cache --fix --ignore-path .gitignore .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "start:meta": "node dist/meta.js"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm lint-staged",
+    "commit-msg": "pnpm commitlint --edit $1"
+  },
+  "lint-staged": {
+    "*.{json,yml,yaml}": [
+      "prettier --write"
+    ],
+    "*.{js,cjs,ts}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "homepage": "https://github.com/justorez/pica-cli",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/justorez/pica-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/justorez/pica-cli/issues"
+  },
+  "keywords": [
+    "pica",
+    "bika",
+    "cli",
+    "inquirer",
+    "download",
+    "哔咔",
+    "漫画"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@commitlint/cli": "^19.3.0",
+    "@commitlint/config-conventional": "^19.2.2",
+    "@inquirer/checkbox": "^1.5.2",
+    "@inquirer/input": "^1.2.16",
+    "@inquirer/password": "^2.0.0",
+    "@inquirer/select": "^1.3.3",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@types/adm-zip": "^0.5.5",
+    "@types/debug": "^4.1.12",
+    "@types/node": "^20.11.7",
+    "@types/progress": "^2.0.7",
+    "@typescript-eslint/eslint-plugin": "^6.20.0",
+    "@typescript-eslint/parser": "^6.20.0",
+    "@vitest/ui": "^1.5.2",
+    "adm-zip": "^0.5.10",
+    "axios": "^1.6.7",
+    "cz-conventional-changelog": "^3.3.0",
+    "debug": "^4.3.4",
+    "dotenv": "^16.4.1",
+    "esbuild": "^0.25.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "figures": "^6.0.1",
+    "lint-staged": "^15.2.0",
+    "mime": "^4.0.1",
+    "ora": "^8.0.1",
+    "p-limit": "^5.0.0",
+    "picocolors": "^1.0.0",
+    "prettier": "3.2.4",
+    "progress": "^2.0.3",
+    "rimraf": "^5.0.5",
+    "rollup": "^4.9.6",
+    "rollup-plugin-esbuild": "^6.1.1",
+    "rollup-plugin-visualizer": "^5.12.0",
+    "simple-git-hooks": "^2.9.0",
+    "tslib": "^2.6.2",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.5.2"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "cli-table3": "^0.6.5",
+    "supports-color": "^9.4.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
+}
