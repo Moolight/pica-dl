@@ -1,0 +1,130 @@
+name: task
+
+on:
+  workflow_dispatch:
+    inputs:
+      PICA_DL_CONTENT:
+        description: '想下点什么？搜索/最新更新/收藏夹/排行榜'
+        required: true
+        type: choice
+        default: search
+        options:
+          - search
+          - recent
+          - favorites
+          - leaderboard
+      PICA_DL_FAV_PAGE:
+        description: '指定下载收藏夹的第几页'
+        type: 'string'
+        default: '全部'
+      PICA_DL_SEARCH_KEYWORDS:
+        description: '搜索关键字或者漫画ID (多个用 # 隔开)'
+        type: string
+      PICA_DL_CHAPTER:
+        description: '指定下载章节 (示例：1,3,5-20)'
+        type: string
+        default: '全部'
+      OUTPUT_ZIP:
+        description: '每个章节打成独立压缩包'
+        type: boolean
+        default: true
+      UPLOAD_FILEIO:
+        description: '上传到 file.io'
+        type: boolean
+        default: false
+      # PICA_DL_CONCURRENCY:
+      #   description: '下载并发数'
+      #   required: true
+      #   type: number
+      #   default: 5
+      PICA_PRINT_FAVS:
+        description: '打印收藏夹的全部内容'
+        type: boolean
+        default: false
+      PICA_DL_RECENT_HOURS:
+        description: '只保留最近 N 小时内更新的漫画（留空=不限制）'
+        type: string
+        default: '48'
+      PICA_DL_EXCLUDE_CATEGORIES:
+        description: '排除的分区，逗号分隔'
+        type: string
+        default: '生肉'
+      PICA_DL_DROP_RAW:
+        description: '过滤生肉（无汉化组/日文标题）'
+        type: boolean
+        default: true
+      PICA_DL_INCLUDE_CATEGORIES:
+        description: '只要这些分类，逗号分隔（如 NTR）'
+        type: string
+        default: ''
+      PICA_DL_LIMIT:
+        description: '过滤后按更新时间取最新 N 部（留空=不限）'
+        type: string
+        default: ''
+      PICA_DL_BLOCK:
+        description: '按分区浏览（如 Cosplay），留空则走搜索/收藏夹/排行榜'
+        type: string
+        default: ''
+      DEBUG:
+        description: '调试模式'
+        type: boolean
+        default: false
+
+env:
+  DEBUG: ${{ inputs.DEBUG && 'pica' }}
+  PICA_PRINT_FAVS: ${{ inputs.PICA_PRINT_FAVS && 'true' || '' }}
+  PICA_IN_GITHUB: true # 用于区分运行环境，不要修改
+  PICA_ACCOUNT: ${{ secrets.PICA_ACCOUNT }}
+  PICA_PASSWORD: ${{ secrets.PICA_PASSWORD }}
+  # PICA_DL_CONCURRENCY: ${{ inputs.PICA_DL_CONCURRENCY }}
+  PICA_DL_CONTENT: ${{ inputs.PICA_DL_CONTENT }}
+  PICA_DL_SEARCH_KEYWORDS: ${{ inputs.PICA_DL_SEARCH_KEYWORDS }}
+  PICA_DL_CHAPTER: ${{ inputs.PICA_DL_CHAPTER }}
+  PICA_DL_FAV_PAGE: ${{ inputs.PICA_DL_FAV_PAGE }}
+  PICA_DL_RECENT_HOURS: ${{ inputs.PICA_DL_RECENT_HOURS }}
+  PICA_DL_EXCLUDE_CATEGORIES: ${{ inputs.PICA_DL_EXCLUDE_CATEGORIES }}
+  PICA_DL_DROP_RAW: ${{ inputs.PICA_DL_DROP_RAW && 'true' || 'false' }}
+  PICA_DL_INCLUDE_CATEGORIES: ${{ inputs.PICA_DL_INCLUDE_CATEGORIES }}
+  PICA_DL_LIMIT: ${{ inputs.PICA_DL_LIMIT }}
+  PICA_DL_BLOCK: ${{ inputs.PICA_DL_BLOCK }}
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Install node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install deps and build
+        run: |
+          pnpm install
+          pnpm run build
+
+      - name: Download
+        run: pnpm start
+
+      - name: Compress
+        if: inputs.OUTPUT_ZIP
+        run: pnpm start:zip
+
+      - name: Upload to github
+        uses: actions/upload-artifact@v4
+        with:
+          name: pica-comics
+          path: ${{ inputs.OUTPUT_ZIP && 'comics-zip/' || 'comics/' }}
+          retention-days: 7
+
+      - name: Upload to file.io
+        if: inputs.UPLOAD_FILEIO
+        run: node scripts/upload.js
