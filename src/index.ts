@@ -598,6 +598,10 @@ async function main() {
         )
         if (comics.length === 0) {
             log.warn('没有找到符合条件的漫画')
+            if (dryRun) {
+                // 干跑时空清单也要吐出来，网页端才知道「这次条件什么都没匹配到」
+                console.log('__PREVIEW_JSON__[]')
+            }
             return
         }
     }
